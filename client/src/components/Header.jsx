@@ -7,7 +7,7 @@ const Header = () => {
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
             <span className="text-slate-500">Nepal</span>
-            <span className="text-slate-500">State</span>
+            <span className="text-slate-500">Estate</span>
             <span className="text-slate-900">Finder</span>
           </h1>
         </Link>
