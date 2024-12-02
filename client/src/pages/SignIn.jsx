@@ -1,11 +1,17 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { data, Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from "../redux/user/userSlice";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handelChange = (e) => {
     setFormData({
@@ -16,10 +22,8 @@ const SignIn = () => {
 
   const handelSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); 
-    setError(null); 
-
     try {
+      dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -28,24 +32,17 @@ const SignIn = () => {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Error response:", errorText);
-        setError(`Error: ${res.status} ${res.statusText}`);
-        setLoading(false); // Set loading to false after the request is finished
+      const data = await res.json();
+      console.log(data);
+
+      if (data.success === false) {
+        dispatch(signInFailure(data.message));
         return;
       }
-
-      const data = await res.json();
-      if (data.success === false) {
-        setError(data.message);
-      }
+      dispatch(signInSuccess(data));
       navigate("/");
-
-      // If successful, clear the loading state
-      setLoading(false);
     } catch (error) {
-      setLoading(false); 
+      dispatch(signInFailure(data.message));
       console.error("Request failed:", error);
       setError("An error occurred. Please try again later.");
     }
@@ -59,8 +56,6 @@ const SignIn = () => {
         {/* Show error message if exists */}
 
         <form onSubmit={handelSubmit} className="flex flex-col gap-4">
-         
-
           {/* Email */}
           <input
             type="email"
