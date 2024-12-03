@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import OAuth from "../components/Oauth";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({});
@@ -16,8 +17,8 @@ const SignUp = () => {
 
   const handelSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true when starting the submit process
-    setError(null); // Clear any previous error message
+    setLoading(true);
+    setError(null);
 
     try {
       const res = await fetch("/api/auth/signup", {
@@ -95,6 +96,7 @@ const SignUp = () => {
           >
             {loading ? "Loading..." : "Sign up"}
           </button>
+          <OAuth />
         </form>
 
         {/* Sign In Redirect */}
