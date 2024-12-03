@@ -6,6 +6,7 @@ import {
   signInSuccess,
   signInFailure,
 } from "../redux/user/userSlice";
+import OAuth from "../components/Oauth";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({});
@@ -82,13 +83,14 @@ const SignIn = () => {
           >
             {loading ? "Loading..." : "Sign up"}
           </button>
+          <OAuth />
         </form>
 
         {/* Sign In Redirect */}
         <div className="flex justify-center gap-2 mt-4 text-sm">
           <p>Don't have an account?</p>
           <Link to="/sign-up">
-            <span className="text-blue-600 hover:underline">Sign In</span>
+            <span className="text-blue-600 hover:underline">Sign Up</span>
           </Link>
         </div>
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
