@@ -56,9 +56,7 @@ export const google = async (req, res, next) => {
         Math.random().toString(36).slice(-4),
       email: req.body.email,
       password: hashedPassword,
-      avatar:
-        req.body.photo ||
-        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+      avatar: req.body.photo,
     });
 
     console.log("Saving new user...");

@@ -1,6 +1,8 @@
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+
 const Header = () => {
   const { currentUser } = useSelector((state) => state.user);
   return (
@@ -40,7 +42,7 @@ const Header = () => {
                 alt="profile"
               />
             ) : (
-              <li className=" text-slate-700 hover:underline">Sign in</li>
+              <li className=" text-slate-700 hover:underline"> Sign in</li>
             )}
           </Link>
         </ul>
