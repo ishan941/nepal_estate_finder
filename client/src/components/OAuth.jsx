@@ -13,11 +13,13 @@ import {
 export default function OAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const handelGoogleClick = async () => {
+  const handleGoogleClick = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
+
       const result = await signInWithPopup(auth, provider);
+
       const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: {
@@ -28,24 +30,17 @@ export default function OAuth() {
           email: result.user.email,
           photo: result.user.photoURL,
         }),
-        credentials: "include",
       });
       const data = await res.json();
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
-        dispatch(signInFailure("failed"));
-        return;
-      }
       dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
-      console.error("Could not sign in with Google:", error);
-      dispatch(signInFailure("Google sign-in failed"));
+      console.log("could not sign in with google", error);
     }
   };
   return (
     <button
-      onClick={handelGoogleClick}
+      onClick={handleGoogleClick}
       type="button"
       className="bg-gradient-to-r from-red-500 to-yellow-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:from-yellow-500 hover:to-red-500 hover:shadow-xl transform hover:scale-105 transition-all duration-300"
     >
