@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
+  const bio = req.body.bio || "";
   const hashedPassword = bcryptjs.hashSync(password, 10);
   const newUser = new User({ username, email, password: hashedPassword });
   try {
@@ -57,6 +58,7 @@ export const google = async (req, res, next) => {
       email: req.body.email,
       password: hashedPassword,
       avatar: req.body.photo,
+      bio: " ",
     });
 
     console.log("Saving new user...");

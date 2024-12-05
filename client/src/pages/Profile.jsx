@@ -5,16 +5,43 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { app } from "../firebase";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../redux/user/userSlice";
+import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
-  const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
+  const dispatch = useDispatch();
+
+  // Initialize formData with currentUser details
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        username: currentUser.username || "",
+        email: currentUser.email || "",
+        bio: currentUser.bio || "",
+        avatar: currentUser.avatar || "",
+      });
+    }
+  }, [currentUser]);
+
+  // Trigger file upload when a file is selected
+  useEffect(() => {
+    if (file) {
+      handleFileUpload(file);
+    }
+  }, [file]);
 
   const handleImageClick = () => {
     fileRef.current.click();
@@ -22,16 +49,17 @@ const Profile = () => {
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile); // Update state
+    if (selectedFile.size > 2 * 1024 * 1024) {
+      toast.error("File exceeds 2 MB size limit.", {
+        position: "top-right",
+        autoClose: 3000,
+        transition: { Slide },
+        closeOnClick,
+      });
+      return;
     }
+    setFile(selectedFile);
   };
-
-  useEffect(() => {
-    if (file) {
-      handleFileUpload(file);
-    }
-  }, [file]);
 
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
@@ -48,14 +76,55 @@ const Profile = () => {
       },
       (error) => {
         console.error("Upload failed:", error.message);
-        setFileUploadError(true);
+        toast.error("Error uploading image. Please try again.", {
+          position: "top-center",
+          autoClose: 3000,
+        });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setFormData((prevData) => ({ ...prevData, avatar: downloadURL }));
+          toast.success("Image uploaded successfully!", {
+            position: "top-center",
+            autoClose: 3000,
+          });
         });
       }
     );
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || "Failed to update profile.");
+      }
+      dispatch(updateUserSuccess(data));
+      toast.success("Profile updated successfully!", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      dispatch(updateUserFailure(error.message));
+      toast.error(error.message || "Error updating profile.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
   };
 
   if (loading) {
@@ -68,7 +137,10 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto p-8">
-      {/* Profile Header (Image + Basic Info) */}
+      {/* Toast Notifications */}
+      <ToastContainer />
+
+      {/* Profile Header */}
       <div className="flex items-center space-x-6 mb-8">
         {/* Profile Image */}
         <div className="flex-shrink-0">
@@ -76,9 +148,8 @@ const Profile = () => {
             src={formData.avatar || currentUser.avatar}
             alt="Profile"
             className="rounded-full h-32 w-32 object-cover border-4 border-gray-200 shadow-md cursor-pointer hover:opacity-90"
-            onClick={handleImageClick} // Make image clickable
+            onClick={handleImageClick}
           />
-          {/* Hidden File Input */}
           <input
             onChange={handleFileChange}
             type="file"
@@ -88,7 +159,6 @@ const Profile = () => {
           />
         </div>
         <div>
-          {/* User Info */}
           <h2 className="text-2xl font-semibold text-gray-800">
             {currentUser.username || "No username available"}
           </h2>
@@ -96,39 +166,20 @@ const Profile = () => {
           <p className="text-sm text-gray-600 mt-1">
             {currentUser.bio || "No bio available"}
           </p>
-          {/* Social Links (Optional) */}
-          <div className="mt-4">
-            {currentUser.github && (
-              <a
-                href={currentUser.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 hover:text-blue-600 transition duration-200"
-              >
-                GitHub
-              </a>
-            )}
-          </div>
         </div>
       </div>
 
       {/* Upload Status */}
       <p className="text-sm self-center">
-        {fileUploadError ? (
-          <span className="text-red-700">
-            Error uploading image (ensure it's less than 2 MB).
-          </span>
-        ) : filePerc > 0 && filePerc < 100 ? (
+        {filePerc > 0 && filePerc < 100 ? (
           <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
-        ) : filePerc === 100 ? (
-          <span className="text-green-700">Image successfully uploaded!</span>
         ) : (
           ""
         )}
       </p>
 
-      {/* Form for updating info */}
-      <form className="space-y-6">
+      {/* Update Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Username Input */}
         <div>
           <label
@@ -140,8 +191,9 @@ const Profile = () => {
           <input
             type="text"
             id="username"
-            defaultValue={currentUser.username}
+            value={formData.username}
             className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
           />
         </div>
 
@@ -156,8 +208,9 @@ const Profile = () => {
           <input
             type="email"
             id="email"
-            defaultValue={currentUser.email}
+            value={formData.email}
             className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
           />
         </div>
 
@@ -171,9 +224,9 @@ const Profile = () => {
           </label>
           <textarea
             id="bio"
-            placeholder="Tell us about yourself"
-            defaultValue={currentUser.bio}
+            value={formData.bio}
             className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
           />
         </div>
 
@@ -190,6 +243,7 @@ const Profile = () => {
             id="password"
             placeholder="Enter new password"
             className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleChange}
           />
         </div>
 
@@ -198,18 +252,20 @@ const Profile = () => {
           type="submit"
           className="w-full py-3 text-white font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          Update Profile
+          {loading ? "Loading..." : " Update Profile"}
         </button>
       </form>
 
-      {/* Account Actions: Delete Account and Sign Out */}
+      {/* Account Actions */}
       <div className="flex justify-between items-center mt-8">
         <span className="text-sm text-red-600 cursor-pointer hover:underline">
           Delete Account
         </span>
-        <span className="text-sm text-gray-600 cursor-pointer hover:underline">
-          Sign Out
-        </span>
+        <Link to="/sign-in">
+          <span className="text-sm text-gray-600 cursor-pointer hover:underline">
+            Sign Out
+          </span>
+        </Link>
       </div>
     </div>
   );
