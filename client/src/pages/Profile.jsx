@@ -11,6 +11,9 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserFailure,
+  deleteUserSuccess,
+  deleteUserStart,
 } from "../redux/user/userSlice";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -121,6 +124,30 @@ const Profile = () => {
       console.error("Error updating user:", error);
       dispatch(updateUserFailure(error.message));
       toast.error(error.message || "Error updating profile.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+  };
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+      toast.success("Account deleted successfullt", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+      toast.error(error.message || "Error deleting profile.", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -258,7 +285,10 @@ const Profile = () => {
 
       {/* Account Actions */}
       <div className="flex justify-between items-center mt-8">
-        <span className="text-sm text-red-600 cursor-pointer hover:underline">
+        <span
+          onClick={handleDeleteUser}
+          className="text-sm text-red-600 cursor-pointer hover:underline"
+        >
           Delete Account
         </span>
         <Link to="/sign-in">
