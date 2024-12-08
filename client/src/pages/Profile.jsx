@@ -14,11 +14,12 @@ import {
   deleteUserFailure,
   deleteUserSuccess,
   deleteUserStart,
+  signOutUserFailure,
+  signOutUserStart,
+  signOutUserSuccess,
 } from "../redux/user/userSlice";
-import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -151,6 +152,20 @@ const Profile = () => {
         position: "top-right",
         autoClose: 3000,
       });
+    }
+  };
+  const handleSignOutUser = async () => {
+    try {
+      dispatch(signOutUserStart());
+      const res = await fetch("/api/auth/signout");
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(data.message));
     }
   };
 
@@ -291,11 +306,12 @@ const Profile = () => {
         >
           Delete Account
         </span>
-        <Link to="/sign-in">
-          <span className="text-sm text-gray-600 cursor-pointer hover:underline">
-            Sign Out
-          </span>
-        </Link>
+        <span
+          onClick={handleSignOutUser}
+          className="text-sm text-gray-600 cursor-pointer hover:underline"
+        >
+          Sign Out
+        </span>
       </div>
     </div>
   );
