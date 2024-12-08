@@ -80,7 +80,7 @@ const Profile = () => {
       (error) => {
         console.error("Upload failed:", error.message);
         toast.error("Error uploading image. Please try again.", {
-          position: "top-center",
+          position: "top-right",
           autoClose: 3000,
         });
       },
@@ -88,7 +88,7 @@ const Profile = () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setFormData((prevData) => ({ ...prevData, avatar: downloadURL }));
           toast.success("Image uploaded successfully!", {
-            position: "top-center",
+            position: "top-right",
             autoClose: 3000,
           });
         });
@@ -117,14 +117,14 @@ const Profile = () => {
       }
       dispatch(updateUserSuccess(data));
       toast.success("Profile updated successfully!", {
-        position: "top-center",
+        position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       console.error("Error updating user:", error);
       dispatch(updateUserFailure(error.message));
       toast.error(error.message || "Error updating profile.", {
-        position: "top-center",
+        position: "top-right",
         autoClose: 3000,
       });
     }
@@ -142,13 +142,13 @@ const Profile = () => {
       }
       dispatch(deleteUserSuccess(data));
       toast.success("Account deleted successfullt", {
-        position: "top-center",
+        position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
       toast.error(error.message || "Error deleting profile.", {
-        position: "top-center",
+        position: "top-right",
         autoClose: 3000,
       });
     }
