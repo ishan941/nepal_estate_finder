@@ -1,7 +1,7 @@
 import express from "express";
 import {
   google,
-  // signOut,
+  signout,
   signup,
   singin,
 } from "../controllers/auth.controller.js";
@@ -14,6 +14,6 @@ router.post("/signin", singin);
 
 router.post("/google", google);
 
-// router.get("/signout", signOut);
+router.get("/signout", signout);
 
 export default router;
