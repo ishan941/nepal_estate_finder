@@ -14,11 +14,13 @@ import {
   deleteUserFailure,
   deleteUserSuccess,
   deleteUserStart,
+  // signOutUserFailure,
+  // signOutUserStart,
+  // signOutUserSuccess,
 } from "../redux/user/userSlice";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -153,6 +155,28 @@ const Profile = () => {
       });
     }
   };
+  // const handleSignOutUser = async () => {
+  //   try {
+  //     // dispatch(signOutUserStart());
+  //     // const res = await fetch("/api/auth/signout");
+  //     // const data = await res.json();
+  //     // if (data.success === false) {
+  //     //   dispatch(signOutUserFailure(data.message));
+  //     //   return;
+  //     // }
+  //     // dispatch(signOutUserSuccess(data.message));
+  //     // toast.success("SignOut successfull", {
+  //     //   position: "top-right",
+  //     //   autoClose: 3000,
+  //     // });
+  //   } catch (error) {
+  //     // dispatch(signOutUserFailure(error.message));
+  //     // toast.success("SignOut successful", {
+  //     //   position: "top-right",
+  //     //   autoClose: 3000,
+  //     // });
+  //   }
+  // };
 
   if (loading) {
     return <p>Loading user data...</p>;
@@ -292,7 +316,10 @@ const Profile = () => {
           Delete Account
         </span>
         <Link to="/sign-in">
-          <span className="text-sm text-gray-600 cursor-pointer hover:underline">
+          <span
+            className="text-sm text-gray-600 cursor-pointer hover:underline"
+            // onChange={handleSignOutUser}
+          >
             Sign Out
           </span>
         </Link>
