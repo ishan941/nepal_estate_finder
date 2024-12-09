@@ -123,16 +123,13 @@ const Profile = () => {
         method: "DELETE",
       });
       const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.message || "Failed to delete account.");
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
       }
       dispatch(deleteUserSuccess(data));
-      toast.success("Account deleted successfully!", { autoClose: 3000 });
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
-      toast.error(error.message || "Error deleting account.", {
-        autoClose: 3000,
-      });
     }
   };
 
@@ -141,14 +138,13 @@ const Profile = () => {
       dispatch(signOutUserStart());
       const res = await fetch("/api/auth/signout");
       const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.message || "Failed to sign out.");
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
       }
-      dispatch(signOutUserSuccess(data));
-      toast.success("Signed out successfully!", { autoClose: 3000 });
+      dispatch(deleteUserSuccess(data));
     } catch (error) {
-      dispatch(signOutUserFailure(error.message));
-      toast.error(error.message || "Error signing out.", { autoClose: 3000 });
+      dispatch(deleteUserFailure(data.message));
     }
   };
 
