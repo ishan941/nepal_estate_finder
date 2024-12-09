@@ -20,6 +20,8 @@ import {
 } from "../redux/user/userSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+
 const Profile = () => {
   const fileRef = useRef(null);
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -54,12 +56,7 @@ const Profile = () => {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile.size > 2 * 1024 * 1024) {
-      toast.error("File exceeds 2 MB size limit.", {
-        position: "top-right",
-        autoClose: 3000,
-        transition: { Slide },
-        closeOnClick,
-      });
+      toast.error("File exceeds 2 MB size limit.", { autoClose: 3000 });
       return;
     }
     setFile(selectedFile);
@@ -79,19 +76,14 @@ const Profile = () => {
         setFilePerc(Math.round(progress));
       },
       (error) => {
-        console.error("Upload failed:", error.message);
         toast.error("Error uploading image. Please try again.", {
-          position: "top-right",
           autoClose: 3000,
         });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setFormData((prevData) => ({ ...prevData, avatar: downloadURL }));
-          toast.success("Image uploaded successfully!", {
-            position: "top-right",
-            autoClose: 3000,
-          });
+          setFormData((prev) => ({ ...prev, avatar: downloadURL }));
+          toast.success("Image uploaded successfully!", { autoClose: 3000 });
         });
       }
     );
@@ -107,9 +99,7 @@ const Profile = () => {
       dispatch(updateUserStart());
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
@@ -117,19 +107,15 @@ const Profile = () => {
         throw new Error(data.message || "Failed to update profile.");
       }
       dispatch(updateUserSuccess(data));
-      toast.success("Profile updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.success("Profile updated successfully!", { autoClose: 3000 });
     } catch (error) {
-      console.error("Error updating user:", error);
       dispatch(updateUserFailure(error.message));
       toast.error(error.message || "Error updating profile.", {
-        position: "top-right",
         autoClose: 3000,
       });
     }
   };
+
   const handleDeleteUser = async () => {
     try {
       dispatch(deleteUserStart());
@@ -142,18 +128,11 @@ const Profile = () => {
         return;
       }
       dispatch(deleteUserSuccess(data));
-      toast.success("Account deleted successfullt", {
-        position: "top-right",
-        autoClose: 3000,
-      });
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
-      toast.error(error.message || "Error deleting profile.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
     }
   };
+
   const handleSignOutUser = async () => {
     try {
       dispatch(signOutUserStart());
@@ -169,146 +148,92 @@ const Profile = () => {
     }
   };
 
-  if (loading) {
-    return <p>Loading user data...</p>;
-  }
-
-  if (error || !currentUser) {
-    return <p>Error loading user data. Please try again later.</p>;
-  }
+  if (loading) return <p>Loading user data...</p>;
+  if (error || !currentUser) return <p>Error loading user data.</p>;
 
   return (
-    <div className="container mx-auto p-8">
-      {/* Toast Notifications */}
+    <div className="max-w-4xl mx-auto p-6">
       <ToastContainer />
 
       {/* Profile Header */}
-      <div className="flex items-center space-x-6 mb-8">
-        {/* Profile Image */}
-        <div className="flex-shrink-0">
-          <img
-            src={formData.avatar || currentUser.avatar}
-            alt="Profile"
-            className="rounded-full h-32 w-32 object-cover border-4 border-gray-200 shadow-md cursor-pointer hover:opacity-90"
-            onClick={handleImageClick}
-          />
-          <input
-            onChange={handleFileChange}
-            type="file"
-            ref={fileRef}
-            hidden
-            accept="image/*"
-          />
-        </div>
+      <div className="flex items-center mb-8 space-x-6">
+        <img
+          src={formData.avatar || currentUser.avatar}
+          alt="Profile"
+          className="h-32 w-32 rounded-full border shadow cursor-pointer"
+          onClick={handleImageClick}
+        />
+        <input
+          type="file"
+          ref={fileRef}
+          onChange={handleFileChange}
+          hidden
+          accept="image/*"
+        />
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {currentUser.username || "No username available"}
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">{currentUser.email}</p>
-          <p className="text-sm text-gray-600 mt-1">
-            {currentUser.bio || "No bio available"}
-          </p>
+          <h1 className="text-2xl font-bold">{currentUser.username}</h1>
+          <p className="text-sm text-gray-500">{currentUser.email}</p>
+          <p className="text-sm text-gray-600">{currentUser.bio}</p>
         </div>
       </div>
 
-      {/* Upload Status */}
-      <p className="text-sm self-center">
-        {filePerc > 0 && filePerc < 100 ? (
-          <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
-        ) : (
-          ""
-        )}
-      </p>
+      {filePerc > 0 && filePerc < 100 && (
+        <p className="text-sm text-gray-500">Uploading: {filePerc}%</p>
+      )}
 
       {/* Update Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Username Input */}
-        <div>
-          <label
-            htmlFor="username"
-            className="block text-gray-700 text-sm font-medium"
-          >
-            Username
-          </label>
-          <input
-            type="text"
-            id="username"
-            value={formData.username}
-            className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Email Input */}
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-gray-700 text-sm font-medium"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Bio Input */}
-        <div>
-          <label
-            htmlFor="bio"
-            className="block text-gray-700 text-sm font-medium"
-          >
-            Bio
-          </label>
-          <textarea
-            id="bio"
-            value={formData.bio}
-            className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Password Input */}
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-gray-700 text-sm font-medium"
-          >
-            New Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            placeholder="Enter new password"
-            className="w-full p-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Update Button */}
+        <InputField
+          label="Username"
+          id="username"
+          value={formData.username}
+          onChange={handleChange}
+        />
+        <InputField
+          label="Email"
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
+        <InputField
+          label="Bio"
+          id="bio"
+          value={formData.bio}
+          onChange={handleChange}
+        />
+        <InputField
+          label="Password"
+          id="password"
+          type="password"
+          placeholder="Enter new password"
+          onChange={handleChange}
+        />
         <button
           type="submit"
-          className="w-full py-3 text-white font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full py-3 bg-blue-600 text-white rounded"
         >
-          {loading ? "Loading..." : " Update Profile"}
+          {loading ? "Loading..." : "Update Profile"}
         </button>
+        <Link
+          to="/create-listing"
+          className="block text-center p-3 bg-green-600 text-white rounded"
+        >
+          Create Listing
+        </Link>
       </form>
 
-      {/* Account Actions */}
-      <div className="flex justify-between items-center mt-8">
+      {/* Actions */}
+      <div className="mt-6 flex justify-between text-sm">
         <span
           onClick={handleDeleteUser}
-          className="text-sm text-red-600 cursor-pointer hover:underline"
+          className="text-red-600 cursor-pointer hover:underline"
         >
           Delete Account
         </span>
         <span
           onClick={handleSignOutUser}
-          className="text-sm text-gray-600 cursor-pointer hover:underline"
+          className="text-gray-600 cursor-pointer hover:underline"
         >
           Sign Out
         </span>
@@ -316,5 +241,19 @@ const Profile = () => {
     </div>
   );
 };
+
+const InputField = ({ label, id, type = "text", ...props }) => (
+  <div>
+    <label htmlFor={id} className="block text-gray-700 text-sm font-medium">
+      {label}
+    </label>
+    <input
+      id={id}
+      type={type}
+      {...props}
+      className="w-full mt-1 p-3 rounded border focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+);
 
 export default Profile;
