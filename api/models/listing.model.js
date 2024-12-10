@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const listingSchema = new mongoose.Schema(
   {
     name: {
@@ -17,7 +18,11 @@ const listingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    discount: {
+    discountPrice: {
+      type: Number,
+      required: true,
+    },
+    bathrooms: {
       type: Number,
       required: true,
     },
@@ -34,8 +39,8 @@ const listingSchema = new mongoose.Schema(
       required: true,
     },
     type: {
-      type: "String",
-      required: "true",
+      type: String,
+      required: true,
     },
     offer: {
       type: Boolean,
@@ -54,4 +59,5 @@ const listingSchema = new mongoose.Schema(
 );
 
 const Listing = mongoose.model("Listing", listingSchema);
+
 export default Listing;
