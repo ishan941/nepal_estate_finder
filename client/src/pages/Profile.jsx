@@ -21,6 +21,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
+import Listing from "../../../api/models/listing.model";
 
 const Profile = () => {
   const fileRef = useRef(null);
@@ -28,7 +29,10 @@ const Profile = () => {
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListingsError, setShowListingsError] = useState(false);
   const dispatch = useDispatch();
+  const [userListings, setUserListings] = useState([]);
 
   // Initialize formData with currentUser details
   useEffect(() => {
@@ -151,6 +155,21 @@ const Profile = () => {
   if (loading) return <p>Loading user data...</p>;
   if (error || !currentUser) return <p>Error loading user data.</p>;
 
+  const handleShowListings = async () => {
+    try {
+      setShowListingsError(false);
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setShowListingsError(true);
+        return;
+      }
+      setUserListings(data);
+    } catch (error) {
+      setShowListingsError(true);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <ToastContainer />
@@ -238,6 +257,47 @@ const Profile = () => {
           Sign Out
         </span>
       </div>
+      <button onClick={handleShowListings} className="text-green-500 w-full">
+        show Listings
+      </button>
+      <p className="text-red-700 mt-5">
+        {showListingsError ? "Error showing listings" : ""}
+      </p>
+      {userListings &&
+        userListings.length > 0 &&
+        userListings.map((listing) => (
+          <div
+            key={listing._id}
+            className="border rounded-lg p-3 flex justify-between items-center gap-4"
+          >
+            <Link to={`/listing/${listing._id}`}>
+              <img
+                src={listing.imageUrls[0]}
+                alt="listing cover"
+                className="h-16 w-16 object-contain "
+              />
+            </Link>
+            <Link className="flex-1" to={`/listing/${listing._id}`}>
+              <p className="text-slate-700 font-semibold hover:underline truncate">
+                {listing.name}
+              </p>
+            </Link>
+            <div className="flex justify-between w-full">
+              <button
+                onClick={() => handleEditListing(listing._id)}
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteListing(listing._id)}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
     </div>
   );
 };
