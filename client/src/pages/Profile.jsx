@@ -1,4 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
+
 import {
   getDownloadURL,
   getStorage,
@@ -268,31 +270,70 @@ const Profile = () => {
         userListings.map((listing) => (
           <div
             key={listing._id}
-            className="border rounded-lg p-3 flex justify-between items-center gap-4"
+            className="bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105"
           >
-            <Link to={`/listing/${listing._id}`}>
+            {/* Listing Image */}
+            <Link to={`/listing/${listing._id}`} className="block">
               <img
                 src={listing.imageUrls[0]}
-                alt="listing cover"
-                className="h-16 w-16 object-contain "
+                alt="Listing Cover"
+                className="h-48 w-full object-cover"
               />
             </Link>
-            <Link className="flex-1" to={`/listing/${listing._id}`}>
-              <p className="text-slate-700 font-semibold hover:underline truncate">
-                {listing.name}
+
+            {/* Listing Details */}
+            <div className="p-4">
+              <Link to={`/listing/${listing._id}`}>
+                <h3 className="text-lg font-semibold text-gray-800 hover:underline truncate">
+                  {listing.name}
+                </h3>
+              </Link>
+              <p className="text-gray-500 mt-2 line-clamp-2">
+                {listing.description}
               </p>
-            </Link>
-            <div className="flex justify-between w-full">
+
+              {/* Price */}
+              <div className="mt-3">
+                {listing.discountPrice && listing.regularPrice ? (
+                  <div>
+                    {/* Regular Price with Line-through */}
+                    <div className="text-sm text-gray-500 line-through">
+                      Rs. {listing.regularPrice}
+                    </div>
+
+                    <div className="text-lg font-bold text-green-600">
+                      Rs. {listing.regularPrice - listing.discountPrice}
+                    </div>
+                    <div className="text-sm text-red-500">
+                      Save Rs. {listing.discountPrice} (
+                      {Math.round(
+                        (listing.discountPrice / listing.regularPrice) * 100
+                      )}
+                      % OFF)
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-lg font-bold text-green-600">
+                    Rs. {listing.regularPrice}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center bg-gray-100 p-3">
               <button
                 onClick={() => handleEditListing(listing._id)}
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="text-blue-500 hover:text-blue-600 flex items-center"
               >
+                <FaEdit className="mr-1" />
                 Edit
               </button>
               <button
                 onClick={() => handleDeleteListing(listing._id)}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                className="text-red-500 hover:text-red-600 flex items-center"
               >
+                <FaTrashAlt className="mr-1" />
                 Delete
               </button>
             </div>
