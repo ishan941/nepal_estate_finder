@@ -171,6 +171,25 @@ const Profile = () => {
       setShowListingsError(true);
     }
   };
+  const handleListingDelete = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+      toast.success("Listing deleted successfully!", { autoClose: 2000 });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  const handleEditListing = async (listingId) => {};
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -330,7 +349,7 @@ const Profile = () => {
                 Edit
               </button>
               <button
-                onClick={() => handleDeleteListing(listing._id)}
+                onClick={() => handleListingDelete(listing._id)}
                 className="text-red-500 hover:text-red-600 flex items-center"
               >
                 <FaTrashAlt className="mr-1" />
