@@ -171,6 +171,25 @@ const Profile = () => {
       setShowListingsError(true);
     }
   };
+  const handleListingDelete = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        console.log(data.message);
+        return;
+      }
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+      toast.success("Listing deleted successfully!", { autoClose: 2000 });
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  const handleListingUpdate = async (listingId) => {};
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -322,15 +341,18 @@ const Profile = () => {
 
             {/* Action Buttons */}
             <div className="flex justify-between items-center bg-gray-100 p-3">
+              <Link to={`/update-listing/${listing._id}`}>
+                <button
+                  onClick={() => handleListingUpdate(listing._id)}
+                  className="text-blue-500 hover:text-blue-600 flex items-center"
+                >
+                  <FaEdit className="mr-1" />
+                  Edit
+                </button>
+              </Link>
+
               <button
-                onClick={() => handleEditListing(listing._id)}
-                className="text-blue-500 hover:text-blue-600 flex items-center"
-              >
-                <FaEdit className="mr-1" />
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteListing(listing._id)}
+                onClick={() => handleListingDelete(listing._id)}
                 className="text-red-500 hover:text-red-600 flex items-center"
               >
                 <FaTrashAlt className="mr-1" />
