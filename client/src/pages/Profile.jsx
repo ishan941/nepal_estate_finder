@@ -189,7 +189,7 @@ const Profile = () => {
       console.log(error.message);
     }
   };
-  const handleListingUpdate = async (listingId) => {};
+  // const handleListingUpdate = async (listingId) => {};
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -343,7 +343,7 @@ const Profile = () => {
             <div className="flex justify-between items-center bg-gray-100 p-3">
               <Link to={`/update-listing/${listing._id}`}>
                 <button
-                  onClick={() => handleListingUpdate(listing._id)}
+                  // onClick={() => handleListingUpdate(listing._id)}
                   className="text-blue-500 hover:text-blue-600 flex items-center"
                 >
                   <FaEdit className="mr-1" />
